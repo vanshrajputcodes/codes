@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+            width: 350px;
+        }
+        input {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin: 10px;
+            width: 80%;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #ff7eb3;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background: #ff4f8b;
+        }
+        #result, #weather-details {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .weather-icon {
+            width: 100px;
+            height: 100px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+    <script>
+        function getWeather() {
+            let city = document.getElementById("city").value;
+            fetch("/get_weather", {
+                method: "POST",
+                body: new URLSearchParams({"city": city}),
+                headers: {"Content-Type": "application/x-www-form-urlencoded"}
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerText = `Weather: ${data.weather}`;
+                document.getElementById("weather-details").innerHTML = `
+                    <p>Temperature: ${data.temperature}°C</p>
+                    <p>Humidity: ${data.humidity}%</p>
+                    <p>Wind Speed: ${data.wind_speed} m/s</p>
+                `;
+                let icon = document.getElementById("weather-icon");
+                icon.src = `https://openweathermap.org/img/wn/${data.icon}@2x.png`;
+                icon.style.display = "block";
+            });
+        }
+
+        function getVoiceWeather() {
+            fetch("/voice_input", { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                if (data.weather) {
+                    document.getElementById("result").innerText = `Weather: ${data.weather}`;
+                    document.getElementById("weather-details").innerHTML = `
+                        <p>Temperature: ${data.temperature}°C</p>
+                        <p>Humidity: ${data.humidity}%</p>
+                        <p>Wind Speed: ${data.wind_speed} m/s</p>
+                    `;
+                    let icon = document.getElementById("weather-icon");
+                    icon.src = `https://openweathermap.org/img/wn/${data.icon}@2x.png`;
+                    icon.style.display = "block";
+                } else {
+                    document.getElementById("result").innerText = data.error;
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather App</h1>
+        <input type="text" id="city" placeholder="Enter city name">
+        <button onclick="getWeather()">Get Weather</button>
+        <button onclick="getVoiceWeather()">Use Voice</button>
+        <p id="result"></p>
+        <img id="weather-icon" class="weather-icon" style="display: none;" alt="Weather Icon">
+        <div id="weather-details"></div>
+    </div>
+</body>
+</html>
